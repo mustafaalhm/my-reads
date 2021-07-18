@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Book from '../components/book';
 import * as BooksAPI from '../BooksAPI';
 
-class Search extends Component {
+class Search extends React.Component {
   static propTypes = {
     books: PropTypes.array.isRequired,
     changeShelf: PropTypes.func.isRequired
@@ -12,28 +12,28 @@ class Search extends Component {
 
   state = {
     query: '',
-    newBooks: [],
-    searchErr: false
+    resultSearch: [],
+    notFound: false
   };
 
-  getBooks = event => {
-    const query = event.target.value;
+  handelEvent = e => {
+    const query = e.target.value;
     this.setState({ query });
 
     // if user input => run the search
     if (query) {
       BooksAPI.search(query.trim(), 20).then(books => {
         books.length > 0
-          ? this.setState({ newBooks: books, searchErr: false })
-          : this.setState({ newBooks: [], searchErr: true });
+          ? this.setState({ resultSearch: books, notFound: false })
+          : this.setState({ resultSearch: [], notFound: true });
       });
 
       // if query is empty => reset state to default
-    } else this.setState({ newBooks: [], searchErr: false });
+    } else this.setState({ resultSearch: [], notFound: false });
   };
 
   render() {
-    const { query, newBooks, searchErr } = this.state;
+    const { query, resultSearch, notFound } = this.state;
     const { books, changeShelf } = this.props;
 
     return (
@@ -47,16 +47,16 @@ class Search extends Component {
               type="text"
               placeholder="Search by title or author"
               value={query}
-              onChange={this.getBooks}
+              onChange={this.handelEvent}
             />
           </div>
         </div>
         <div className="search-books-results">
-          {newBooks.length > 0 && (
+          {resultSearch.length > 0 && (
             <div>
-              <h3>Search returned {newBooks.length} books </h3>
+              <h3>Search returned {resultSearch.length} books </h3>
               <ol className="books-grid">
-                {newBooks.map(book => (
+                {resultSearch.map(book => (
                   <Book
                     book={book}
                     books={books}
@@ -67,14 +67,12 @@ class Search extends Component {
               </ol>
             </div>
           )}
-          {searchErr && (
-            <h3>Search did not return any books. Please try again!</h3>
+          {notFound && (
+            <h3>there is no any book with this name try again</h3>
           )}
         </div>
       </div>
     );
   }
 }
-
-
 export default Search;
